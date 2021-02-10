@@ -18,6 +18,8 @@ import com.jandromuso.mymovies.client.MovieDbClient
 import com.jandromuso.mymovies.databinding.ActivityMainBinding
 import com.jandromuso.mymovies.model.Movie
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val moviesAdapter = MoviesAdapter(emptyList()) { navigateTo(it) }
 
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){ isGranted ->
-        requestPopularMovies(isGranted)
+        doRequestPopularMovies(isGranted)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,28 +46,27 @@ class MainActivity : AppCompatActivity() {
         binding.recycler.adapter = moviesAdapter
         requestPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
 
-
-
-    }
-    @SuppressLint("MissingPermission")
-    private fun requestPopularMovies(isLocationGranted: Boolean){
-        if(isLocationGranted){
-            fusedLocationClient.lastLocation.addOnCompleteListener{
-                doRequestPopularMovies(getRegionFromLocation(it.result))
-            }
-        }else{
-            doRequestPopularMovies(DEFAULT_REGION)
-        }
-
     }
 
-    private fun doRequestPopularMovies(region: String) {
+    private fun doRequestPopularMovies(isLocationGranted: Boolean) {
         lifecycleScope.launch{
             val apiKey = getString(R.string.api_key)
+            val region =  getRegion(isLocationGranted)
             val popularMovies = MovieDbClient.service.listPopularMovies(apiKey, region)
             moviesAdapter.movies = popularMovies.results
             //Esto indica al adapter que tiene que rerenderizar la vista
             moviesAdapter.notifyDataSetChanged()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun getRegion(isLocationGranted: Boolean): String = suspendCancellableCoroutine { continuation ->
+        if(isLocationGranted){
+            fusedLocationClient.lastLocation.addOnCompleteListener{
+                continuation.resume(getRegionFromLocation(it.result))
+            }
+        }else{
+            continuation.resume(DEFAULT_REGION)
         }
     }
 
