@@ -62,5 +62,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+    //Servicios para recoger la geolocalización a través de los play services de google
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 
 }
