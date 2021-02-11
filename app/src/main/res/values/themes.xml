@@ -17,4 +17,9 @@
     <style name="textViewStyle" parent="Widget.MaterialComponents.TextView">
         <item name="android:textSize">40sp</item>
     </style>
+    <style name="Theme.MyMovies.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
 </resources>
